@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cronentries>
+	<cron>
+		<url>/updatecalendartask</url>
+		<description>Update calendar entries</description>
+		<schedule>every 6 hours</schedule>
+	</cron>
+	
+	
+</cronentries>

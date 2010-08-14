@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://java.sun.com/xml/ns/javaee"
+xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
+xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+	<servlet>
+		<servlet-name>CalendarFeedr</servlet-name>
+		<servlet-class>com.metabroadcast.mashups.feedr.CalendarFeedrServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>CalendarFeedr</servlet-name>
+		<url-pattern>/test</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>AuthInit</servlet-name>
+		<servlet-class>com.metabroadcast.mashups.feedr.authenticate.AuthenticateServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>AuthInit</servlet-name>
+		<url-pattern>/authinit</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>Authsub</servlet-name>
+		<servlet-class>com.metabroadcast.mashups.feedr.authenticate.AuthenticationSub</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>Authsub</servlet-name>
+		<url-pattern>/authsub</url-pattern>
+	</servlet-mapping>
+	
+	<servlet>
+		<servlet-name>UpdateCalendar</servlet-name>
+		<servlet-class>com.metabroadcast.mashups.feedr.UpdateCalendarServlet</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UpdateCalendar</servlet-name>
+		<url-pattern>/updatecalendar</url-pattern>
+	</servlet-mapping>
+	<servlet>
+		<servlet-name>UpdateCalendarTask</servlet-name>
+		<servlet-class>com.metabroadcast.mashups.feedr.taskqueue.UpdateCalendarTask</servlet-class>
+	</servlet>
+	<servlet-mapping>
+		<servlet-name>UpdateCalendarTask</servlet-name>
+		<url-pattern>/updatecalendartask</url-pattern>
+	</servlet-mapping>
+	<welcome-file-list>
+		<welcome-file>index.html</welcome-file>
+	</welcome-file-list>
+	<security-constraint>
+		<!--  web-resource-collection>
+			<url-pattern>/updatecalendartask</url-pattern>
+		</web-resource-collection>
+		<auth-constraint>admin</auth-constraint-->
+	</security-constraint>
+</web-app>
