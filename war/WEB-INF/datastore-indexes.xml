@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datastore-indexes autoGenerate="true">
+	<datastore-index kind="TaskExecution" ancestor="false"
+		source="manual">
+		<property name="userMail" direction="asc" />
+		<property name="executedOn" direction="desc" />
+	</datastore-index>
+</datastore-indexes>
