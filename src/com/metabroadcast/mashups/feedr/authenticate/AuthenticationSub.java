@@ -33,6 +33,7 @@ import com.google.gdata.data.Feed;
 import com.google.gdata.data.calendar.CalendarEntry;
 import com.google.gdata.data.calendar.CalendarFeed;
 import com.google.gdata.util.AuthenticationException;
+import com.google.gdata.util.ServiceForbiddenException;
 import com.metabroadcast.mashups.feedr.google.calendar.CalendarClient;
 import com.metabroadcast.mashups.feedr.google.calendar.CalendarUtil;
 import com.metabroadcast.mashups.feedr.manager.EntityManager;
@@ -47,8 +48,6 @@ public class AuthenticationSub extends HttpServlet {
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
 
-		StringBuffer buffer = new StringBuffer();
-		resp.setContentType("text/plain");
 		PrivateKey privateKey = null;
 		boolean newSubscriber = true;
 
@@ -61,27 +60,40 @@ public class AuthenticationSub extends HttpServlet {
 					.getQueryString());
 			singleUseToken = URLDecoder.decode(singleUseToken, "UTF-8");
 			String sessionToken = null;
-			buffer.append("single use token:" + singleUseToken + "\n");
+			logger.info("single use token:" + singleUseToken + "\n");
 			sessionToken = AuthSubUtil.exchangeForSessionToken(singleUseToken,
 					privateKey);
-
+			logger.info("retrieved permanent session token:"+sessionToken);
 			CalendarClient calendarClient = new CalendarClient(sessionToken);
 
 			CalendarUtil cutil = new CalendarUtil();
 			CalendarEntry calendar = cutil.createCalendar();
 			String calendarUid = null;
+			boolean serviceForbiden = false;
 			try {
 				calendarUid = calendarClient.addNewCalendar(calendar);
 			} catch (IOException e) {
 				logger.warning("Timeout while creating new calendar.");
+			} catch (ServiceForbiddenException sfe) {
+				logger.warning("Service forbiden!");
+				serviceForbiden = true;
 			} catch (Exception e) {
 				logger.warning("Unexpected exception while creating new calendar:"+e);
+				e.printStackTrace();
 			}
 			
-			
+			if (serviceForbiden){
+				resp.getWriter().print("It looks like you need to visit <a href=\"http://google.com/calendar\">Google Calendar</a> in order to init public calendars. Afterwards come back and try again.");
+				return;
+			}
+
 			UserService userService = UserServiceFactory.getUserService();
 			User user = userService.getCurrentUser();
-			buffer.append(privateKey).append(user.getEmail());
+//			buffer.append(privateKey).append(user.getEmail());
+			if (user == null){
+				logger.severe("can't authenticate user!");
+				resp.sendRedirect("/");
+			}
 
 			AuthenticatedUser authUser = manager.getAuthenticatedUser(user);
 
@@ -103,23 +115,14 @@ public class AuthenticationSub extends HttpServlet {
 
 		} catch (AuthenticationException ae) {
 			logger.severe("Authentication exception:" + ae + "\n");
-			buffer.append("Authentication exception:" + ae + "\n");
+			ae.printStackTrace();
 		} catch (GeneralSecurityException gse) {
 			logger.severe("General security exception:" + gse);
-			buffer.append("General security exception:" + gse + "\n");
+			gse.printStackTrace();
 		} catch (Exception e) {
-			logger.severe("e:" + e + "\n");
-			buffer.append("e:" + e + "\n");
+			logger.severe("e:" + e + "\nline:"+"\n");
+			e.getStackTrace();
 		}
-		if (newSubscriber) {
-			buffer
-					.append("Thanks for signing up. Never miss another show. Hope you'll enjoy service.");
-			resp.getWriter().print(buffer.toString() + "\n");
-		} else {
-			buffer
-					.append("Your calendar has been updated last time on:<sample_data>. Hope you enjoy service.");
-			resp.getWriter().print(buffer.toString() + "\n");
-		}
-
+		resp.sendRedirect("/");
 	}
 }

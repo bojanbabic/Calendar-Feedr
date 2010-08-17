@@ -26,4 +26,10 @@ public class UpdateCalendarServlet extends HttpServlet {
 		}
 		resp.getWriter().println(buffer);
 	}
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+			throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doGet(req, resp);
+	}
 }

@@ -39,7 +39,7 @@ body {
 
 h1 {
 	font-size: 100px;
-	padding: 0px;
+	padding: 10px;
 	margin-bottom: 0px;
 }
 
@@ -97,16 +97,19 @@ a {
 <%
 		try{
 			
+			// get logged-in user 
 			UserService userService = UserServiceFactory.getUserService();
 			User user = userService.getCurrentUser();
 			EntityManager manager = new EntityManager();
 			Logger logger = Logger.getLogger(this.getServletName());
-		
+			
+			// if not logged-in redirect to logging screen
 			if (user == null) {
 		 		response.sendRedirect(userService.createLoginURL(request.getRequestURI()));
 			}
 			logger.info("recognised user:"+user.getEmail());
 		
+			// user already authenticate with service? 
 			AuthenticatedUser authUser = manager.getAuthenticatedUser(user);
 			if (authUser != null && authUser.getToken() != null) {
 				TaskExecution taskExecutionedOn = manager.getLatestTaskExecution(authUser.getUser().getEmail());
@@ -126,8 +129,8 @@ a {
 				<%
 			
 			} else {
+				// if not authenticated, get him to auth screen
 				logger.info("Can't find auth user.");
-				// String hostedDomain = "calendarfeedr.appspot.com/";
 				String nextUrl = "http://calendarfeedr.appspot.com/authsub";
 				String scope = "http://www.google.com/calendar/feeds/";
 				boolean secure = false;
@@ -139,6 +142,7 @@ a {
 				<a href="<%=authSubUrl %>">Click here to authenticate to Service</a>
 <%
 			}
+			// sanaty check!
 		} catch(Exception e){
 			e.printStackTrace();
 		}

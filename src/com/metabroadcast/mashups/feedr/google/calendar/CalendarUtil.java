@@ -68,11 +68,5 @@ public class CalendarUtil {
 		calendarUid = calendarId.replaceAll("^.*calendars/", "").replaceAll("%40.*", "");
 		return calendarUid;
 	}
-	
-	public static void main(String[] args){
-		String calId = CalendarUtil.getCalendarUid("http://www.google.com/calendar/feeds/default/calendars/bpdvfro47qmqdgfnkeanrtn8lc%40group.calendar.google.com");
-		logger.info("calendar id:"+calId);
-	}
-	
-	
+
 }

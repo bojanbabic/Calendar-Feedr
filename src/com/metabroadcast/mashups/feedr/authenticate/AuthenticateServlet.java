@@ -17,15 +17,13 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gdata.client.http.AuthSubUtil;
 import com.metabroadcast.mashups.feedr.google.calendar.CalendarUtil;
 import com.metabroadcast.mashups.feedr.manager.EntityManager;
-import com.metabroadcast.mashups.feedr.manager.ManagerFactory;
 import com.metabroadcast.mashups.feedr.model.AuthenticatedUser;
 import com.metabroadcast.mashups.feedr.model.TaskExecution;
 
 public class AuthenticateServlet extends HttpServlet {
 	private Logger logger = Logger.getLogger(this.getClass().getName());
 	private EntityManager manager = new EntityManager();
-	private static final boolean testing = false;
-
+	
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -54,7 +52,7 @@ public class AuthenticateServlet extends HttpServlet {
 			}
 			
 			buffer
-					.append("Your calendar has been updated last time on:<sample_data>. Hope you enjoy service.");
+					.append(excutionString);
 			resp.getWriter().print(buffer.toString() + "\n");
 		} else {
 			// String hostedDomain = "calendarfeedr.appspot.com/";

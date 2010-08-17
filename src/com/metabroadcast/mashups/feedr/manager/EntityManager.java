@@ -21,9 +21,9 @@ public class EntityManager {
 		try{
 			factory.makePersistent(media);
 		} finally {
-			
 		}
 	}
+	
 	
 	public void saveAuthenticatedUser(AuthenticatedUser authUser){
 		try{
@@ -41,19 +41,24 @@ public class EntityManager {
 			factory.makePersistent(processedMediaLog);
 		} catch (Exception e) {
 			logger.warning("exception e:"+e);
+		} finally{
 		}
 	}
 	
 	public AuthenticatedUser getAuthenticatedUser(User user){
 		AuthenticatedUser authenticatedUser = null;
 		try{
+			if(user == null){
+				logger.info("null user provided to auth method:");
+				return null;
+			}
+			logger.info("trying to get info for user:"+user.getEmail());
 			authenticatedUser = factory.getObjectById(AuthenticatedUser.class, user.getEmail());
 		} catch (JDOObjectNotFoundException jonfe) {
 			logger.info("Entity not found:"+user);
 		} catch (Exception e) {
 			logger.warning("Exception while getting authenticated user:"+e);
 		} finally{
-			
 		}
 		return authenticatedUser;
 	}
@@ -64,6 +69,7 @@ public class EntityManager {
 			authenticatedUsers = (List<AuthenticatedUser>) factory.newQuery("select from "+AuthenticatedUser.class.getName()).execute();
 		} catch (Exception e) {
 			logger.warning("Exception while getting authenticated userS:"+e);
+		} finally{
 		}
 		return authenticatedUsers;
 	}
@@ -82,7 +88,6 @@ public class EntityManager {
 		} catch (Exception e) {
 			logger.warning("exception while fetching media for user:"+e);
 		} finally{
-			
 		}
 		return processedMedia;
 	}
@@ -95,11 +100,95 @@ public class EntityManager {
 			query.setOrdering("executedOn desc");
 			query.getFetchPlan().setFetchSize(1);
 			
-			te = (TaskExecution) query.execute(userMail);
+			List<TaskExecution> teList = (List<TaskExecution>) query.execute(userMail);
+			if (teList != null && teList.size() >0){
+				te = teList.get(0);
+			}
 		} catch (Exception e) {
 			logger.warning("exception while fetching latest task execution for user"+e);
 		}
 		return te;
+	}
+	public AuthenticatedUser getAuthenticatedUserByCalendarID(String calendarId){
+		AuthenticatedUser authenticatedUser = null;
+		try{
+			Query query = factory.newQuery(AuthenticatedUser.class, "calendarUid == calendarIDParam");
+			query.declareParameters("String calendarIDParam");
+			query.getFetchPlan().setFetchSize(1);
+			
+			List<AuthenticatedUser> authUser = (List<AuthenticatedUser>) query.execute(calendarId);
+			if (authUser != null && authUser.size() > 0){
+				authenticatedUser = authUser.get(0);
+			}
+		} catch (Exception e) {
+			logger.warning("Exception while getting authenticated userS:"+e);
+		} finally{
+		}
+		return authenticatedUser;
+	}
+	
+	public List<TaskExecution> getTaskExecutionForUser(String userMail){
+		List<TaskExecution> te = null;
+		try{
+			if (factory.isClosed()){
+				factory = ManagerFactory.get().getPersistenceManager();
+			}
+			Query query = factory.newQuery(TaskExecution.class, "userMail == userMailParam");
+			query.declareParameters("String userMailParam");
+			
+			te = (List<TaskExecution>) query.execute(userMail);
+		} catch (Exception e) {
+			logger.warning("exception while fetching latest task execution for user"+e);
+		} finally{
+		}
+		return te;
+	}
+
+	public List<ProcessedMediaLog> getLogsForUser(String userMail){
+		List<ProcessedMediaLog> mediaLog = null;
+		try{
+			Query query = factory.newQuery(ProcessedMediaLog.class, "userMail == userMailParam");
+			query.declareParameters("String userMailParam");
+			
+			mediaLog = (List<ProcessedMediaLog>) query.execute(userMail);
+		} catch (Exception e) {
+			logger.warning("exception while fetching latest task execution for user"+e);
+		} finally {
+		}
+		return mediaLog;
+	}
+	
+	public void deleteAuthenticatedUser(AuthenticatedUser user){
+		try{
+			if (factory.isClosed()){
+				factory = ManagerFactory.get().getPersistenceManager();
+			}
+			factory.deletePersistent(user);
+		}finally{
+		}
+	}
+	
+	public void deleteTasksExecutedForUser(TaskExecution task){
+		try{
+			factory.deletePersistent(task);
+		}finally{
+		}
+	}
+	
+	public void deleteProcessedMediaLog(ProcessedMediaLog mediaLog){
+		try{
+			factory.deletePersistent(mediaLog);
+		} finally{
+		}
+	}
+	
+	public void updateAuthUserCalendarId(AuthenticatedUser authenticatedUser, String calendarId){
+		try{
+			AuthenticatedUser user = factory.getObjectById(AuthenticatedUser.class, authenticatedUser.getUser().getEmail());
+			user.setCalendarUid(calendarId);
+		} finally{
+			factory.close();
+		}
 	}
 	
 	public void saveTaskExecution(TaskExecution taskExecution){

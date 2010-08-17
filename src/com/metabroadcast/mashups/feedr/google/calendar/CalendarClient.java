@@ -78,10 +78,12 @@ public class CalendarClient {
 			logger.warning("Calendar service not init.");
 			return null;
 		}
-
-		if (getCalendarByName(calendarEntry.getTitle().getPlainText()) != null){
+		
+		CalendarEntry existingCalendar = getCalendarByName(calendarEntry.getTitle().getPlainText());
+		if (existingCalendar != null){
 			logger.info("Calendar already exists.");
-			return null;
+			String calendarUid = CalendarUtil.getCalendarUid(existingCalendar.getId());
+			return calendarUid;
 		}		
 
 		URL url = new URL(OWN_CALENDARS_URL);

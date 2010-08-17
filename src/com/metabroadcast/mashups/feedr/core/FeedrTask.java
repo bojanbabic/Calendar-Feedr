@@ -1,6 +1,7 @@
 package com.metabroadcast.mashups.feedr.core;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.ParseException;
@@ -10,6 +11,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
+
+import javax.jdo.PersistenceManager;
 
 import net.sf.jsr107cache.Cache;
 import net.sf.jsr107cache.CacheException;
@@ -34,6 +37,7 @@ import com.metabroadcast.mashups.feedr.model.Media;
 import com.metabroadcast.mashups.feedr.model.AuthenticatedUser;
 import com.metabroadcast.mashups.feedr.model.ProcessedMediaLog;
 import com.metabroadcast.mashups.feedr.model.TaskExecution;
+import com.metabroadcast.mashups.feedr.util.Cnstats;
 import com.metabroadcast.mashups.feedr.util.JCacheUtil;
 
 public class FeedrTask {
@@ -57,7 +61,7 @@ public class FeedrTask {
 	public void core() throws Exception {
 
 		List<Media> newCalendarEvents = getLatestMedia();
-		String userCacheKey = JCacheUtil.getKeyDailyKeyLabel("user_processed");
+		String userCacheKey = JCacheUtil.getKeyDailyKeyLabel(Cnstats.CACHE_ENTRY_USER_PROCESSED);
 		List<String> processedUsers = new ArrayList<String>();
 		
 		if (cache.containsKey(userCacheKey)){
@@ -85,7 +89,7 @@ public class FeedrTask {
 				logger.info("user not authenticated.");
 			}
 			// retrieve calendar
-			
+			calendarClient = new CalendarClient(user.getToken());
 			String calendarId = user.getCalendarUid();
 			if (calendarId == null){
 				logger.warning("Can't find user calendar uid. trying seeking by name");
@@ -95,6 +99,10 @@ public class FeedrTask {
 					continue;
 				}
 				calendarId  = CalendarUtil.getCalendarUid(fCalendar.getId());
+				logger.info("updating calendarId:"+calendarId+" associated with user");
+				EntityManager newManager = new EntityManager();
+				newManager.updateAuthUserCalendarId(user, calendarId);
+				
 			}
 
 			
@@ -213,6 +221,8 @@ public class FeedrTask {
 
 			}
 
+		} catch (IOException ioe) {
+			logger.warning("Error while fetching atlas api data!");
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
